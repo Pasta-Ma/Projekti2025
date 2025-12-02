@@ -4,7 +4,7 @@ const pool = require("../db/pool");
 const getMessages = async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT m.id, m.content, m.created_at, u.username 
+      `SELECT m.id, m.user_id AS "userId", m.content, m.created_at, u.username 
        FROM messages m
        JOIN users u ON m.user_id = u.id
        ORDER BY m.created_at ASC`

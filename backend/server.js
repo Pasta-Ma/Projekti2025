@@ -30,6 +30,9 @@ app.use("/api/auth", authRoutes);
 const chatRoutes = require("./routes/chatRoutes");
 app.use("/api/chat", chatRoutes);
 
+const adminRoutes = require("./routes/adminRoutes");
+app.use("/api/admin", adminRoutes);
+
 // Socket.io
 io.on("connection", (socket) => {
   console.log("Uusi käyttäjä yhdistetty:", socket.id);

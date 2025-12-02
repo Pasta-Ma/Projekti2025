@@ -4,6 +4,7 @@ import Register from "./components/Register";
 import Login from "./components/Login";
 import Chat from "./components/Chat";
 import Profiles from "./components/Profiles";
+import Admin from "./components/Admin";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token") || "");
@@ -35,6 +36,10 @@ function App() {
         <Route
           path="/profile"
           element={user ? <Profiles user={user} setUser={setUser} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/admin"
+          element={user && user.is_admin ? <Admin user={user} /> : <Navigate to="/chat" />}
         />
         <Route path="*" element={<Navigate to={user ? "/chat" : "/login"} />} />
       </Routes>

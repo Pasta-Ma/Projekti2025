@@ -22,12 +22,12 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await pool.query(
-      "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email",
+      "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email, is_admin",
       [username, email, hashedPassword]
     );
 
     const token = jwt.sign(
-      { userId: newUser.rows[0].id, username: newUser.rows[0].username },
+      { userId: newUser.rows[0].id, username: newUser.rows[0].username, isAdmin: newUser.rows[0].is_admin },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -61,12 +61,12 @@ const loginUser = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user.rows[0].id, username: user.rows[0].username },
+      { userId: user.rows[0].id, username: user.rows[0].username, isAdmin: user.rows[0].is_admin },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    res.json({ token, user: { id: user.rows[0].id, username: user.rows[0].username, email: user.rows[0].email } });
+    res.json({ token, user: { id: user.rows[0].id, username: user.rows[0].username, email: user.rows[0].email, is_admin: user.rows[0].is_admin } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Palvelinvirhe" });
@@ -80,7 +80,7 @@ const getProfile = async (req, res) => {
   const { id } = req.params;
   try {
     const result = await pool.query(
-      "SELECT id, username, email, bio FROM users WHERE id = $1",
+      "SELECT id, username, email, bio, is_admin FROM users WHERE id = $1",
       [id]
     );
     if (result.rows.length === 0) return res.status(404).json({ message: "Käyttäjää ei löytynyt" });
@@ -104,7 +104,7 @@ const updateProfile = async (req, res) => {
 
   try {
     const result = await pool.query(
-      "UPDATE users SET username = $1, bio = $2 WHERE id = $3 RETURNING id, username, email, bio",
+      "UPDATE users SET username = $1, bio = $2 WHERE id = $3 RETURNING id, username, email, bio, is_admin",
       [username, bio, id]
     );
 

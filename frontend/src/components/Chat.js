@@ -9,6 +9,7 @@ const socket = io("http://localhost:5000");
 const Chat = ({ user, onLogout }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [selectedUserProfile, setSelectedUserProfile] = useState(null);
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
 
@@ -57,11 +58,32 @@ const Chat = ({ user, onLogout }) => {
     setNewMessage("");
   };
 
+  const handleMessageClick = async (userId) => {
+    if (userId === user.id) return;
+
+    try {
+      const res = await api.get(`/auth/profile/${userId}`);
+      console.log("Profile data received:", res.data);
+      setSelectedUserProfile(res.data);
+    } catch (err) {
+      console.error("Failed to fetch user profile:", err);
+    }
+  };
+
+  const closeProfileModal = () => {
+    setSelectedUserProfile(null);
+  };
+
   return (
     <div className="chat-container">
       <div className="chat-header">
         <h2>MeetMe Chat</h2>
         <div className="chat-header-buttons">
+          {user.is_admin && (
+            <button className="btn btn-admin" onClick={() => navigate("/admin")}>
+              Admin Panel
+            </button>
+          )}
           <button className="btn btn-profile" onClick={() => navigate("/profile")}>
             Profile
           </button>
@@ -77,7 +99,10 @@ const Chat = ({ user, onLogout }) => {
             key={msg.id}
             className={`message ${msg.userId === user.id ? "own-message" : ""}`}
           >
-            <div className="message-bubble">
+            <div
+              className={`message-bubble ${msg.userId !== user.id ? "clickable" : ""}`}
+              onClick={() => handleMessageClick(msg.userId)}
+            >
               <div className="message-username">{msg.username}</div>
               <div className="message-content">{msg.content}</div>
               <div className="message-time">
@@ -91,6 +116,26 @@ const Chat = ({ user, onLogout }) => {
         ))}
         <div ref={messagesEndRef} />
       </div>
+
+      {/* profiili modali */}
+      {selectedUserProfile && (
+        <div className="profile-modal-overlay" onClick={closeProfileModal}>
+          <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={closeProfileModal}>
+              ×
+            </button>
+            <div className="modal-header">
+              <h3>{selectedUserProfile.username}</h3>
+            </div>
+            <div className="modal-content">
+              <div className="modal-field">
+                <label>Bio:</label>
+                <p>{selectedUserProfile.bio || "No bio yet"}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="chat-input-container">
         <form onSubmit={handleSend} className="chat-input-form">
