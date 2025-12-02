@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { io } from "socket.io-client";
+import "./Chat.css";
 
 const socket = io("http://localhost:5000");
 
-const Chat = ({ user }) => {
+const Chat = ({ user, onLogout }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
+  const navigate = useNavigate();
 
   // Hae vanhat viestit backendistä
   useEffect(() => {
@@ -40,7 +43,7 @@ const Chat = ({ user }) => {
 
   const handleSend = (e) => {
     e.preventDefault();
-    if (!newMessage) return;
+    if (!newMessage.trim()) return;
 
     const msgObj = {
       userId: user.id,
@@ -55,36 +58,54 @@ const Chat = ({ user }) => {
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "0 auto" }}>
-      <h2>Chat</h2>
-      <div
-        style={{
-          border: "1px solid #ccc",
-          padding: "1rem",
-          height: "300px",
-          overflowY: "scroll",
-        }}
-      >
+    <div className="chat-container">
+      <div className="chat-header">
+        <h2>MeetMe Chat</h2>
+        <div className="chat-header-buttons">
+          <button className="btn btn-profile" onClick={() => navigate("/profile")}>
+            Profile
+          </button>
+          <button className="btn btn-logout" onClick={onLogout}>
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <div className="messages-container">
         {messages.map((msg) => (
-          <div key={msg.id}>
-            <strong>{msg.username}: </strong>
-            {msg.content}
+          <div
+            key={msg.id}
+            className={`message ${msg.userId === user.id ? "own-message" : ""}`}
+          >
+            <div className="message-bubble">
+              <div className="message-username">{msg.username}</div>
+              <div className="message-content">{msg.content}</div>
+              <div className="message-time">
+                {new Date(msg.created_at).toLocaleTimeString("fi-FI", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
+            </div>
           </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <form onSubmit={handleSend} style={{ marginTop: "1rem" }}>
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Kirjoita viesti..."
-          style={{ width: "75%" }}
-        />
-        <button type="submit" style={{ width: "23%", marginLeft: "2%" }}>
-          Lähetä
-        </button>
-      </form>
+
+      <div className="chat-input-container">
+        <form onSubmit={handleSend} className="chat-input-form">
+          <input
+            type="text"
+            className="chat-input"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type a message..."
+          />
+          <button type="submit" className="btn-send">
+            Send
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

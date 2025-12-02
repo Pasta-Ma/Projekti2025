@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import Chat from "./components/Chat";
@@ -25,29 +25,16 @@ function App() {
 
   return (
     <Router>
-      <nav style={{ padding: "1rem", borderBottom: "1px solid #ccc" }}>
-        {user ? (
-          <>
-            <Link to="/chat">Chat</Link> | <Link to="/profile">Profiili</Link> |{" "}
-            <button onClick={handleLogout}>Kirjaudu ulos</button>
-          </>
-        ) : (
-          <>
-            <Link to="/register">Rekisteröidy</Link> | <Link to="/login">Kirjaudu</Link>
-          </>
-        )}
-      </nav>
-
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route
           path="/chat"
-          element={user ? <Chat user={user} /> : <Navigate to="/login" />}
+          element={user ? <Chat user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
         />
         <Route
           path="/profile"
-            element={user ? <Profiles user={user} setUser={setUser} /> : <Navigate to="/login" />}
+          element={user ? <Profiles user={user} setUser={setUser} /> : <Navigate to="/login" />}
         />
         <Route path="*" element={<Navigate to={user ? "/chat" : "/login"} />} />
       </Routes>
